@@ -9,9 +9,16 @@ import Spinner from "@/components/ui/spinner"
 interface RootLayoutClientProps {
   children: React.ReactNode
   className: string
+  headerLogoUrl: string
+  headerTitle: string
 }
 
-export default function RootLayoutClient({ children, className }: RootLayoutClientProps) {
+export default function RootLayoutClient({
+  children,
+  className,
+  headerLogoUrl,
+  headerTitle,
+}: RootLayoutClientProps) {
   const pathname = usePathname()
   const [loading, setLoading] = useState(false)
   const [prevPath, setPrevPath] = useState(pathname)
@@ -32,7 +39,7 @@ export default function RootLayoutClient({ children, className }: RootLayoutClie
 
   return (
     <body className={className + " bg-white min-h-screen m-0 p-0 !m-0 !p-0"}>
-      <Navbar />
+      <Navbar logoUrl={headerLogoUrl} title={headerTitle} />
       <Toaster richColors position="top-center" />
       {loading && (
         <div className="fixed inset-0 z-50 bg-white bg-opacity-80 flex items-center justify-center">

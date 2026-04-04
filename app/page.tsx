@@ -12,7 +12,7 @@ export default async function HomePage() {
       {/* Hero Section */}
       {/* Events Grid */}
       <section className="py-12">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {events.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">Belum ada event tersedia</p>

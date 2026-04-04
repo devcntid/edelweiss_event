@@ -1,5 +1,76 @@
+import { cache } from "react";
 import { sql } from "./neon";
 import { redis } from "./redis";
+
+const DEFAULT_PUBLIC_TITLE = "Kreativa Education Event";
+const DEFAULT_PUBLIC_LOGO =
+  "https://tguray8zidjbrs4r.public.blob.vercel-storage.com/logo/logo-ken-full.png";
+const DEFAULT_PUBLIC_FAVICON = DEFAULT_PUBLIC_LOGO;
+
+export type PublicAppBranding = {
+  logoUrl: string;
+  faviconUrl: string;
+  title: string;
+};
+
+async function loadPublicAppBranding(): Promise<PublicAppBranding> {
+  const cacheKey = "settings:public:branding";
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached && typeof cached === "string") {
+      const parsed = JSON.parse(cached) as Partial<PublicAppBranding>;
+      if (
+        typeof parsed.logoUrl === "string" &&
+        typeof parsed.faviconUrl === "string" &&
+        typeof parsed.title === "string"
+      ) {
+        return {
+          logoUrl: parsed.logoUrl,
+          faviconUrl: parsed.faviconUrl,
+          title: parsed.title,
+        };
+      }
+    }
+  } catch (cacheError) {
+    console.log("Cache error for public branding:", cacheError);
+  }
+
+  try {
+    const rows = await sql`
+      SELECT key, value
+      FROM settings
+      WHERE category = 'public'
+        AND key IN ('logo_public_app', 'favicon_public_app', 'title_public_app')
+    `;
+    const map: Record<string, string> = {};
+    for (const row of rows as { key: string; value: string }[]) {
+      if (row.key && row.value != null) {
+        map[row.key] = String(row.value);
+      }
+    }
+    const branding: PublicAppBranding = {
+      logoUrl: map["logo_public_app"] || DEFAULT_PUBLIC_LOGO,
+      faviconUrl: map["favicon_public_app"] || DEFAULT_PUBLIC_FAVICON,
+      title: map["title_public_app"] || DEFAULT_PUBLIC_TITLE,
+    };
+    try {
+      await redis.setex(cacheKey, 900, JSON.stringify(branding));
+    } catch (cacheError) {
+      console.log("Failed to cache public branding:", cacheError);
+    }
+    return branding;
+  } catch (error) {
+    console.error("Error fetching public app branding:", error);
+    return {
+      logoUrl: DEFAULT_PUBLIC_LOGO,
+      faviconUrl: DEFAULT_PUBLIC_FAVICON,
+      title: DEFAULT_PUBLIC_TITLE,
+    };
+  }
+}
+
+/** Branding situs publik (logo, favicon, judul) dari tabel settings; cache Redis + dedupe per request. */
+export const getPublicAppBranding = cache(loadPublicAppBranding);
 
 export async function getEvents() {
   const cacheKey = "events:all";
