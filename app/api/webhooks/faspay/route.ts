@@ -77,17 +77,14 @@ export async function POST(request: NextRequest) {
         // Don't throw - log the error but continue with webhook response
       }
 
-      // Kirim WhatsApp paid secara async tanpa QStash
-      // Jalankan di background tanpa blocking response
-      ;(async () => {
-        try {
-          await sendWhatsAppPaidNotification(order.order_reference)
-        } catch (waError) {
-          console.error("❌ Error sending WhatsApp paid notification:", waError)
-        }
-      })().catch((err) => {
-        console.error("❌ Unhandled error in WhatsApp paid notification:", err)
-      })
+      // Kirim WhatsApp paid secara sync (tanpa QStash/Upstash)
+      // Await supaya sempat selesai sebelum response dikirim (serverless-safe)
+      try {
+        await sendWhatsAppPaidNotification(order.order_reference)
+      } catch (waError) {
+        console.error("❌ Error sending WhatsApp paid notification:", waError)
+        // Don't throw - log the error but continue with webhook response
+      }
     }
 
     // 4. Log ke payment_logs
