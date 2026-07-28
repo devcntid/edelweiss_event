@@ -1355,9 +1355,8 @@ Segera selesaikan pembayaran Anda sebelum *{{payment_deadline}}*.
 
 Nomor Virtual Account/Nomor Rekening(jika Bank Transfer/QRIS Statis): *{{virtual_account_number}}*
 
-klik disini untuk petunjuk pembayaran : {{payment_response_url}} 
-
-jika link tidak bisa diklik silakan save dulu nomor ini
+*Petunjuk Pembayaran:*
+{{payment_response_url}}
 
 Terima kasih!', 't', '2025-07-13 18:37:13.135251+00', '2025-07-21 18:29:43.599658+00'),
 (3, 'Email - Paid', 'email', 'paid', 'Pembayaran Berhasil! E-Tiket Anda untuk Pesanan {{order_reference}}', '<h1>Pembayaran Berhasil!</h1>

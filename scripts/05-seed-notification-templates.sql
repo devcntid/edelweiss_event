@@ -29,7 +29,8 @@ Pemesanan tiket Anda untuk event *{{event.name}}* telah berhasil dibuat.
 
 ⏰ Batas Waktu Pembayaran: {{payment_deadline}}
 
-💳 Link Pembayaran: {{payment_response_url}}
+📋 *Petunjuk Pembayaran:*
+{{payment_response_url}}
 
 Terima kasih!', true),
 

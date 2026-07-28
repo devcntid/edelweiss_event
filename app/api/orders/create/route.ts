@@ -589,6 +589,14 @@ export async function POST(request: NextRequest) {
           return `${hariStr}, ${tgl} ${bln} ${thn} jam ${jam} WIB`
         }
         const paymentDeadline = formatDeadline(orderDetail.created_at || null)
+        const isVaChannel = orderDetail.payment_channel?.category === "va"
+        let paymentResponseUrl = orderDetail.payment_response_url || "-"
+        if (isVaChannel) {
+          const { getPaymentInstructionsWhatsAppText } = await import("@/lib/payment-instructions")
+          paymentResponseUrl = await getPaymentInstructionsWhatsAppText(
+            orderDetail.payment_channel?.id ?? orderDetail.payment_channel_id,
+          )
+        }
         const placeholderData = {
           "customer.name": orderDetail.customer?.name || "-",
           "event.name": orderDetail.event?.name || "-",
@@ -597,7 +605,7 @@ export async function POST(request: NextRequest) {
           payment_deadline: paymentDeadline,
           "payment_channel.pg_name": orderDetail.payment_channel?.pg_name || "-",
           virtual_account_number: orderDetail.virtual_account_number || "-",
-          payment_response_url: orderDetail.payment_response_url || "-",
+          payment_response_url: paymentResponseUrl,
         }
         function fillTemplate(template: string, data: Record<string, string>): string {
           let result = template

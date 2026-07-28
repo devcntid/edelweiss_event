@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/neon"
 import { getOrderWithDetails } from "@/lib/data"
+import { getPaymentInstructionsWhatsAppText } from "@/lib/payment-instructions"
 // import { sendEmail } from "@/lib/email-service"
 
 export async function POST(request: NextRequest) {
@@ -97,13 +98,21 @@ export async function POST(request: NextRequest) {
       ticket_link: `${process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || ""}/payment/${orderReference}`,
     }
     if (triggerOn === "checkout") {
+      // VA: petunjuk dari payment_instructions; selain VA tetap pakai payment link
+      const isVaChannel = orderDetail.payment_channel?.category === "va"
+      let paymentResponseUrl = orderDetail.payment_response_url || "-"
+      if (isVaChannel) {
+        paymentResponseUrl = await getPaymentInstructionsWhatsAppText(
+          orderDetail.payment_channel?.id ?? orderDetail.payment_channel_id,
+        )
+      }
       placeholderData = {
         ...placeholderData,
         "order.final_amount": formatRupiah(orderDetail.final_amount),
         payment_deadline: formatDeadline(orderDetail.created_at || null),
         "payment_channel.pg_name": orderDetail.payment_channel?.pg_name || "-",
         virtual_account_number: orderDetail.virtual_account_number || "-",
-        payment_response_url: orderDetail.payment_response_url || "-",
+        payment_response_url: paymentResponseUrl,
       }
     }
 
